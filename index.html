@@ -1,1 +1,180 @@
-あ
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>ガチャRPG</title>
+<style>
+body {
+  font-family: sans-serif;
+  text-align: center;
+  background: #1a1a1a;
+  color: white;
+}
+
+.bar {
+  width: 200px;
+  height: 20px;
+  background: #444;
+  margin: 10px auto;
+  border-radius: 10px;
+}
+
+.hp {
+  height: 100%;
+  background: lime;
+  border-radius: 10px;
+}
+
+button {
+  margin: 5px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.attack { background: red; color: white; }
+.heal { background: green; color: white; }
+.gacha { background: gold; }
+
+#log {
+  margin-top: 20px;
+  height: 120px;
+}
+</style>
+</head>
+<body>
+
+<h1>🎮 ガチャRPG</h1>
+
+<h2>プレイヤー</h2>
+<div class="bar"><div id="playerHP" class="hp"></div></div>
+<p id="playerText"></p>
+<p id="weaponText">武器：なし</p>
+
+<h2>モンスター</h2>
+<div class="bar"><div id="enemyHP" class="hp"></div></div>
+<p id="enemyText"></p>
+
+<h3>コイン：<span id="coin">50</span></h3>
+
+<button class="attack" onclick="attack()">⚔️ 攻撃</button>
+<button class="heal" onclick="heal()">💚 回復</button>
+<button class="gacha" onclick="gacha()">🎲 ガチャ (10コイン)</button>
+
+<div id="log"></div>
+
+<script>
+let playerMax = 100;
+let playerHP = 100;
+let attackPower = 10;
+
+let enemyMax = 100;
+let enemyHP = 100;
+
+let coin = 50;
+
+const weapons = [
+  {name:"木の剣", power:5, rate:0.5},
+  {name:"鉄の剣", power:10, rate:0.3},
+  {name:"炎の剣🔥", power:20, rate:0.15},
+  {name:"伝説の剣✨", power:40, rate:0.05}
+];
+
+function updateUI() {
+  document.getElementById("playerHP").style.width = (playerHP/playerMax*100)+"%";
+  document.getElementById("enemyHP").style.width = (enemyHP/enemyMax*100)+"%";
+
+  document.getElementById("playerText").textContent = playerHP + " / " + playerMax;
+  document.getElementById("enemyText").textContent = enemyHP + " / " + enemyMax;
+  document.getElementById("coin").textContent = coin;
+}
+
+function log(text) {
+  document.getElementById("log").innerHTML = text;
+}
+
+function attack() {
+  let damage = Math.floor(Math.random()*10)+attackPower;
+
+  if (Math.random() < 0.2) {
+    damage *= 2;
+    log("✨クリティカル！✨<br>");
+  } else {
+    log("");
+  }
+
+  enemyHP -= damage;
+  log(document.getElementById("log").innerHTML + "敵に " + damage + " ダメージ！");
+
+  if (enemyHP <= 0) {
+    enemyHP = 0;
+    coin += 20;
+    log("🎉 勝利！コイン+20！");
+    resetEnemy();
+    updateUI();
+    return;
+  }
+
+  enemyTurn();
+  updateUI();
+}
+
+function heal() {
+  let heal = Math.floor(Math.random()*15)+10;
+  playerHP += heal;
+  if (playerHP > playerMax) playerHP = playerMax;
+
+  log("💚 " + heal + " 回復！");
+
+  enemyTurn();
+  updateUI();
+}
+
+function enemyTurn() {
+  let damage = Math.floor(Math.random()*15)+5;
+  playerHP -= damage;
+
+  if (playerHP <= 0) {
+    playerHP = 0;
+    log("💀 ゲームオーバー...");
+    return;
+  }
+
+  log(document.getElementById("log").innerHTML + "<br>👿 敵の攻撃！" + damage);
+}
+
+function resetEnemy() {
+  enemyHP = enemyMax;
+}
+
+function gacha() {
+  if (coin < 10) {
+    log("コインが足りない！");
+    return;
+  }
+
+  coin -= 10;
+
+  let rand = Math.random();
+  let total = 0;
+
+  for (let w of weapons) {
+    total += w.rate;
+    if (rand < total) {
+      attackPower = w.power;
+      document.getElementById("weaponText").textContent = "武器：" + w.name;
+      log("🎉 " + w.name + " をゲット！");
+      break;
+    }
+  }
+
+  updateUI();
+}
+
+updateUI();
+</script>
+
+</body>
+</html>
